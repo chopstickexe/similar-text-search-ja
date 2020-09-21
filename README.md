@@ -6,7 +6,7 @@ Find similar sentences using huggingface/transformers
 ```
 # Clone this repository
 
-$ docker build similar-text-search-ja .
+$ docker build -t similar-text-search-ja .
 $ docker run -it --gpus all -v $PWD:/opt/app -v ~/.gitconfig:/etc/gitconfig --rm similar-text-search-ja
 
 # Attach to the container
