@@ -1,0 +1,65 @@
+version: "2.4"
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    container_name: es01
+    environment:
+      discovery.type: single-node
+      bootstrap.memory_lock: "true"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    expose:
+      - 9200
+    networks:
+      - elastic
+
+  kib01:
+    image: docker.elastic.co/kibana/kibana:7.9.1
+    container_name: kib01
+    environment:
+      VIRTUAL_HOST: kib.localhost
+      ELASTICSEARCH_URL: http://es01:9200
+      ELASTICSEARCH_HOSTS: http://es01:9200
+    networks:
+      - elastic
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: proxy01
+    ports:
+      - 80:80
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - elastic
+
+  python:
+    build:
+      context: .
+    container_name: python01
+    # Since Docker Compose does not support --gpus option yet, 
+    # This runtime and environment settings are needed as well as 
+    # a special settings in /etc/docker/daemon.json
+    # https://github.com/docker/compose/issues/6691#issuecomment-525245786 
+    runtime: nvidia
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+    volumes:
+      - .:/opt/app
+      - ~/.gitconfig:/etc/gitconfig
+    tty: true  # Keep this container alive
+    networks:
+      - elastic
+
+volumes:
+  data01:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge
