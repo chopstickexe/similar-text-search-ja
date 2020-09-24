@@ -35,3 +35,21 @@ class ES:
         if body:
             self.es.bulk(body)
         logger.info(f"Indexed {i + 1} documents")
+
+    def get(self, index, id):
+        return self.es.get(index, id)
+
+    def mlt_by_id(self, index, target_fields, query_doc_id, size=100, min_term_freq=1):
+        return self.es.search(
+            body={
+                "query": {
+                    "more_like_this": {
+                        "fields": target_fields,
+                        "like": {"_index": index, "_id": query_doc_id},
+                        "min_term_freq": min_term_freq,
+                    }
+                },
+                "size": size
+            },
+            index=index
+        )
