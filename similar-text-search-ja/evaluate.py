@@ -1,4 +1,5 @@
 import csv
+from typing import Dict, List
 
 
 def compare_docs(query_doc, docs, ans_field):
@@ -17,12 +18,12 @@ def get_first_relevant_rank(case):
     return case.index(True) + 1 if True in case else -1
 
 
-def print_cases(csv_path, ids, cases):
+def print_cases(csv_path, cases: Dict[str, List[bool]]):
     with open(csv_path, mode="w") as f:
         writer = csv.DictWriter(f, fieldnames=["ID", "FIRST_RELEVANT"])
         writer.writeheader()
-        for case_id, case in zip(ids, cases):
-            first_rel = get_first_relevant_rank(case)
+        for case_id, rels in cases.items():
+            first_rel = get_first_relevant_rank(rels)
             writer.writerow({"ID": case_id, "FIRST_RELEVANT": first_rel})
 
 
