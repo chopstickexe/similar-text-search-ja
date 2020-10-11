@@ -14,23 +14,30 @@ def main():
     test_id_max = int(app_conf["TestIdMax"])
     target_fields = app_conf["TargetFields"].split(",")
     ans_field = app_conf["AnsField"]
+    invalid_ans = app_conf["InvalidAns"]
 
     es = es_wrapper.ES([es_url])
 
-    results = []
+    results = {}
     test_ids = range(test_id_max, test_id_min, -1)
     for query_doc_id in test_ids:
         query_doc = es.get(index, query_doc_id)["_source"]
+        ans = query_doc[ans_field]
+        if not ans or ans == invalid_ans:
+            continue
+
         mlt_docs = [
             hit["_source"]
             for hit in es.mlt_by_id(index, target_fields, query_doc_id)["hits"]["hits"]
         ]
-        results.append(evaluate.compare_docs(query_doc, mlt_docs, ans_field))
+        results[query_doc_id] = evaluate.compare_docs(query_doc, mlt_docs, ans_field)
 
     reports_dir = Path("reports/mlit")
     reports_dir.mkdir(parents=True, exist_ok=True)
-    evaluate.print_cases(reports_dir / "mlt-cases.csv", test_ids, results)
-    evaluate.print_summary(reports_dir / "mlt-summary.txt", results, [1, 3, 5, 10, 20, 50, 100])
+    evaluate.print_cases(reports_dir / "mlt-cases.csv", results)
+    evaluate.print_summary(
+        reports_dir / "mlt-summary.txt", results.values(), [1, 3, 5, 10, 20, 50, 100]
+    )
 
 
 if __name__ == "__main__":
