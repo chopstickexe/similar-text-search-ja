@@ -1,0 +1,18 @@
+{
+    "es_url": "es01:9200",
+    "bert_cls_field": "bert_cls_vec",
+    "bert_vec_size": 768,
+    "mlit":{
+        "es_index": "mlit",
+        "es_always_clear_index": "True",
+        "es_bulk_size": 10000,
+        "csv_path": "data/mlit/mlit.20200919.cleaned.csv",
+        "test_id_min": 56777,
+        "test_id_max": 57777,
+        "target_fields": ["申告内容の要約"],
+        "ans_field": "不具合装置",
+        "invalid_ans": "その他",
+        "date_field": "受付日",
+        "date_format": "yyyy年MM月dd日"
+    }
+}
