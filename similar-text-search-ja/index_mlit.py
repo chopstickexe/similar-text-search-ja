@@ -1,6 +1,6 @@
 import es as es_wrapper
 import utils
-from mlit import parser
+from csv_parser import CsvParser
 
 
 def create_index(
@@ -24,7 +24,7 @@ def create_index(
 
 
 def post_documents(es: "es_wrapper.ES", index: str, csv_path: str, bulk_size: int):
-    with parser.Parser(csv_path) as mlit_parser:
+    with CsvParser(csv_path) as mlit_parser:
         es.index(index, mlit_parser, bulk_size)
 
 
