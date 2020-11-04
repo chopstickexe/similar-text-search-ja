@@ -9,6 +9,8 @@ def create_index(
     index: str,
     date_field: str,
     date_format: str,
+    bert_cls_field: str,
+    bert_vec_size: int
 ):
     if clear_index:
         es.delete_index(index)
@@ -17,9 +19,12 @@ def create_index(
         index,
         body={
             "mappings": {
-                "properties": {date_field: {"type": "date", "format": date_format}}
+                "properties": {
+                    date_field: {"type": "date", "format": date_format},
+                    bert_cls_field: {"type": "dense_vector", "dims": bert_vec_size}
+                }
             }
-        },
+        }
     )
 
 
@@ -43,6 +48,8 @@ def main():
         index,
         mlit_conf["date_field"],
         mlit_conf["date_format"],
+        conf["bert_cls_field"],
+        conf["bert_vec_size"]
     )
     post_documents(es, index, mlit_conf["csv_path"], mlit_conf["es_bulk_size"])
 
