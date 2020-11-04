@@ -1,9 +1,9 @@
-Found at 1 = 0.566
-Found at 3 = 0.784
-Found at 5 = 0.850
-Found at 10 = 0.915
-Found at 20 = 0.959
-Found at 50 = 0.988
+Found at 1 = 0.570
+Found at 3 = 0.779
+Found at 5 = 0.843
+Found at 10 = 0.916
+Found at 20 = 0.960
+Found at 50 = 0.987
 Found at 100 = 1.000
-MRR = 0.682
-MAP = 0.480
+MRR = 0.684
+MAP = 0.482
