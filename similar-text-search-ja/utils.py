@@ -1,48 +1,36 @@
-import configparser
+import json
 from logging import Formatter, StreamHandler, getLogger
 from pathlib import Path
+from typing import Any, Dict
 
 
-def get_package_root(file: str = __file__) -> Path:
-    """Return path to the parent directory of the given file
+def get_dir(file: str = __file__) -> Path:
+    """Return path to the directory of the given file
 
     Args:
         file (str, optional): Python script or other types of file. Defaults to __file__.
 
     Returns:
-        Path: Parent path
+        Path: directory path
     """
     return Path(file).parent
 
 
-def set_logger(name: str, level: str = "INFO"):
-    """Set a logger with the given name appropriately
+def set_root_logger(level: str = "INFO"):
+    """Set formatters and handlers to the root logger
 
     Args:
-        name (str): logger name
         level (str, optional): logging level. Defaults to "INFO".
     """
-    logger = getLogger(name)
-    formatter = Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
+    logger = getLogger()
+    formatter = Formatter("%(asctime)s %(name)-14s %(levelname)-8s %(message)s")
     handler = StreamHandler()
     handler.setLevel(level)
     handler.setFormatter(formatter)
     logger.setLevel(level)
     logger.addHandler(handler)
-    logger.propagate = False
 
 
-def get_app_config(
-    path: Path = get_package_root() / "config.ini",
-) -> configparser.ConfigParser:
-    """Parse config.ini
-
-    Args:
-        path (Path, optional): config.ini path. Defaults to get_package_root()/"config.ini".
-
-    Returns:
-        configparser.ConfigParser: Key-value pairs defined in the config
-    """
-    app_conf = configparser.ConfigParser()
-    app_conf.read(path)
-    return app_conf
+def read_json_config(config_file: Path) -> Dict[str, Any]:
+    with open(str(config_file), "r") as f:
+        return json.load(f)

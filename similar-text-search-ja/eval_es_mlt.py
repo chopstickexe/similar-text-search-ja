@@ -1,26 +1,22 @@
 from pathlib import Path
+from typing import Dict, List
 
 import es as es_wrapper
 import evaluate
 import utils
 
 
-def main():
-    utils.read_log_config()
-    app_conf = utils.get_app_config()["DEFAULT"]
-    es_url = app_conf["EsUrl"]
-    index = app_conf["EsIndex"]
-    test_id_min = int(app_conf["TestIdMin"])
-    test_id_max = int(app_conf["TestIdMax"])
-    target_fields = app_conf["TargetFields"].split(",")
-    ans_field = app_conf["AnsField"]
-    invalid_ans = app_conf["InvalidAns"]
-
-    es = es_wrapper.ES([es_url])
-
+def get_mlt_results(
+    es: "es_wrapper.ES",
+    index: str,
+    test_id_min: int,
+    test_id_max: int,
+    target_fields: List[str],
+    ans_field: str,
+    invalid_ans: str,
+) -> Dict[int, List[bool]]:
     results = {}
-    test_ids = range(test_id_max, test_id_min, -1)
-    for query_doc_id in test_ids:
+    for query_doc_id in range(test_id_max, test_id_min, -1):
         query_doc = es.get(index, query_doc_id)["_source"]
         ans = query_doc[ans_field]
         if not ans or ans == invalid_ans:
@@ -31,9 +27,28 @@ def main():
             for hit in es.mlt_by_id(index, target_fields, query_doc_id)["hits"]["hits"]
         ]
         results[query_doc_id] = evaluate.compare_docs(query_doc, mlt_docs, ans_field)
+    return results
 
+
+def main():
+    utils.set_root_logger()
+
+    config_file = utils.get_dir().parent / "config.json"
     reports_dir = Path("reports/mlit")
     reports_dir.mkdir(parents=True, exist_ok=True)
+
+    conf = utils.read_json_config(config_file)
+    mlit_conf = conf["mlit"]
+    results = get_mlt_results(
+        es_wrapper.ES([conf["es_url"]]),
+        mlit_conf["es_index"],
+        mlit_conf["test_id_min"],
+        mlit_conf["test_id_max"],
+        mlit_conf["target_fields"],
+        mlit_conf["ans_field"],
+        mlit_conf["invalid_ans"],
+    )
+
     evaluate.print_cases(reports_dir / "mlt-cases.csv", results)
     evaluate.print_summary(
         reports_dir / "mlt-summary.txt", results.values(), [1, 3, 5, 10, 20, 50, 100]
