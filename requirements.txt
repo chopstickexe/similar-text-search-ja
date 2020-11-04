@@ -5,3 +5,4 @@ torch==1.6.0+cu101
 elasticsearch
 black  # formatter
 flake8  # linter
+pytest

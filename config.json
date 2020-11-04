@@ -5,7 +5,7 @@
     "mlit":{
         "es_index": "mlit",
         "es_always_clear_index": "True",
-        "es_bulk_size": 10000,
+        "es_bulk_size": 2000,
         "csv_path": "data/mlit/mlit.20200919.cleaned.csv",
         "test_id_min": 56777,
         "test_id_max": 57777,
