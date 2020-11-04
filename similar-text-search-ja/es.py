@@ -49,7 +49,36 @@ class ES:
                         "min_term_freq": min_term_freq,
                     }
                 },
-                "size": size
+                "size": size,
             },
-            index=index
+            index=index,
+        )
+
+    def cosine_by_id(self, index, dense_vector_field, query_doc_id, size=100):
+        doc = self.es.get(index, query_doc_id)
+        return self.es.search(
+            body={
+                "query": {
+                    "script_score": {
+                        "query": {
+                            "bool": {
+                                "must_not": [
+                                    {
+                                        "ids": {
+                                            "values": [
+                                                str(query_doc_id)
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }},
+                        "script": {
+                            "source": "cosineSimilarity(params.query_vector, 'bert_cls_vec') + 1.0",
+                            "params": {
+                                "query_vector": doc["_source"][dense_vector_field]
+                            },
+                        },
+                    }
+                }
+            }
         )
