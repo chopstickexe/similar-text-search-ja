@@ -1,9 +1,10 @@
-import es as es_wrapper
-import utils
-from csv_parser import CsvParser
-from vectorizer import JaVectorizer
-from typing import Dict, Any, List
 import logging
+from typing import Any, Dict, List
+
+import csv_parser
+import es as es_wrapper
+import utils, vectorizers
+
 
 def create_index(
     es: "es_wrapper.ES",
@@ -31,7 +32,9 @@ def create_index(
 
 
 def get_target_fields_txt(doc: Dict[str, Any], target_fields: List[str]) -> str:
-    ret = ' '.join([doc[field] for field in target_fields if field in doc and doc[field]])
+    ret = " ".join(
+        [doc[field] for field in target_fields if field in doc and doc[field]]
+    )
     return ret
 
 
@@ -50,13 +53,13 @@ def get_documents(
     csv_path: str,
     target_fields: List[str],
     bert_cls_field: str,
-    vectorizer: "JaVectorizer",
+    vectorizer: "vectorizers.JaVectorizer",
 ) -> List[Dict[str, Any]]:
     logger = logging.getLogger(__name__)
     ret = []
-    with CsvParser(csv_path) as csv_parser:
+    with csv_parser.CsvParser(csv_path) as parser:
         batch_docs = []
-        for doc in csv_parser:
+        for doc in parser:
             batch_docs.append(doc)
             if len(batch_docs) == 32:
                 vectorize_doc(batch_docs, target_fields, bert_cls_field, vectorizer)
@@ -69,7 +72,9 @@ def get_documents(
     return ret
 
 
-def post_documents(es: "es_wrapper.ES", index: str, docs: List[Dict[str, Any]], bulk_size: int):
+def post_documents(
+    es: "es_wrapper.ES", index: str, docs: List[Dict[str, Any]], bulk_size: int
+):
     es.index(index, docs, bulk_size)
 
 
@@ -93,8 +98,10 @@ def main():
         conf["bert_vec_size"],
     )
 
-    vectorizer = JaVectorizer()
-    docs = get_documents(mlit_conf["csv_path"], mlit_conf["target_fields"], bert_cls_field, vectorizer)
+    vectorizer = vectorizers.JaVectorizer()
+    docs = get_documents(
+        mlit_conf["csv_path"], mlit_conf["target_fields"], bert_cls_field, vectorizer
+    )
     post_documents(es, index, docs, mlit_conf["es_bulk_size"])
 
 
