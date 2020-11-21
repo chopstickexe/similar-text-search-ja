@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 
 from similar_text_search_ja import csv_parser
 from similar_text_search_ja import es as es_wrapper
-from similar_text_search_ja import vectorizers
+from similar_text_search_ja import utils, vectorizers
 
 
 def create_index(
@@ -90,3 +90,34 @@ def post_documents(
         bulk_size (int): Bulk size
     """
     es.index(index, docs, bulk_size)
+
+
+def main():
+    """Example usage"""
+    utils.set_root_logger()
+
+    es = es_wrapper.ES(["es01:9200"])
+    fields = {
+        "受付日": {
+            "type": "date",
+            "format": "yyyy年MM月dd日",
+        },
+        "bert_cls_vec": {
+            "type": "dense_vector",
+            "dims": 768,
+        },
+    }
+    index = "test"
+    create_index(es=es, clear_index=True, index=index, fields=fields)
+    docs = get_documents(
+        csv_path="data/mlit/mlit.sample.csv",
+        target_fields=["申告内容の要約"],
+        vector_field="bert_cls_vec",
+        vectorizer=vectorizers.JaVectorizer(),
+    )
+    post_documents(es=es, index=index, docs=docs, bulk_size=1000)
+    es.delete_index(index)
+
+
+if __name__ == "__main__":
+    main()
