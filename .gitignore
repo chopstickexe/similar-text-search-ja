@@ -138,4 +138,5 @@ dmypy.json
 cython_debug/
 
 data/**/*.csv
+!data/mlit/mlit.sample.csv
 .vscode
