@@ -15,17 +15,15 @@ class ES:
     def create_index(self, index, body):
         self.es.indices.create(index, body=body)
 
-    def index(self, index, parser, bulk_size=2000):
+    def index(self, index, docs, bulk_size=2000):
         logger = logging.getLogger(__name__)
         body = ""
-
-        for i, row in enumerate(parser):
+        for i, doc in enumerate(docs):
             act_index = {}
             act_index["index"] = {"_index": index, "_id": i}
             body += json.dumps(act_index)
             body += "\n"
 
-            doc = row
             body += json.dumps(doc, ensure_ascii=False)
             body += "\n"
             if (i + 1) % bulk_size == 0:
@@ -33,8 +31,9 @@ class ES:
                 self.es.bulk(body)
                 body = ""
         if body:
+            logger.info(f"Post {i + 1} documents...")
             self.es.bulk(body)
-        logger.info(f"Indexed {i + 1} documents")
+        logger.info(f"Indexed {len(docs)} documents")
 
     def get(self, index, id):
         return self.es.get(index, id)

@@ -30,7 +30,7 @@ $ docker exec -it python01 bash
 # python -m venv .venv
 # sourse .venv/bin/activate 
 (.venv) # pip install -r requirements.txt
-(.venv) # python similar-text-search-ja/index_mlit.py -c
+(.venv) # python -m similar_text_search_ja.mlit.index
 ```
 
 Open `http://kib.localhost/app/dev_tools#/console` from your browser and try this query:

@@ -18,13 +18,15 @@ class JaVectorizer:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = self.model.to(self.device)
 
-    def encode(self, sentences: List[str]):
+    def encode(self, sentences: List[str], padding: bool = True):
         if len(sentences) == 0:
             return None
-        input_ids = self.tokenizer(sentences, return_tensors="pt", padding=True)
-        input_ids = input_ids.to(self.device)
-        return input_ids
+        return self.tokenizer(sentences, return_tensors="pt", padding=padding)
 
+    def decode(self, encode_result):
+        return self.tokenizer.convert_ids_to_tokens(encode_result.input_ids.flatten().tolist())
+    
     def vectorize(self, input_ids):
+        input_ids.to(self.device)
         with torch.no_grad():
             return self.model(**input_ids)
