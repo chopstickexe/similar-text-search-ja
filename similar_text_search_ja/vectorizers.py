@@ -21,10 +21,9 @@ class JaVectorizer:
     def encode(self, sentences: List[str]):
         if len(sentences) == 0:
             return None
-        input_ids = self.tokenizer(sentences, return_tensors="pt", padding=True)
-        input_ids = input_ids.to(self.device)
-        return input_ids
+        return self.tokenizer(sentences, return_tensors="pt", padding=True)
 
     def vectorize(self, input_ids):
+        input_ids.to(self.device)
         with torch.no_grad():
             return self.model(**input_ids)
