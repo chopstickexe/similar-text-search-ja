@@ -4,11 +4,12 @@ from similar_text_search_ja import utils, vectorizers
 
 
 def main():
-    config_file = utils.get_dir().parent / "config.json"
     utils.set_root_logger()
 
+    config_file = utils.get_dir().parent / "config.json"
     conf = utils.read_json_config(config_file)
     mlit_conf = conf["mlit"]
+
     bert_cls_field = conf["bert_cls_field"]
     index = mlit_conf["es_index"]
 
