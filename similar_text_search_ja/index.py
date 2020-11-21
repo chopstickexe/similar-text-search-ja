@@ -1,5 +1,6 @@
 import csv
 import logging
+from pathlib import Path
 from typing import Any, Dict, List
 
 from similar_text_search_ja import csv_parser
@@ -89,14 +90,16 @@ def get_stats(
 ):
     logger = logging.getLogger(__name__)
     target_fields = conf["mlit"]["target_fields"]
-    sum = 0
+    sum_tokens = 0
+    sum_chars = 0
     for doc in docs:
         txt = _get_target_fields_txt(doc, target_fields)
+        sum_chars += len(txt)
         input_ids = vectorizer.encode(txt, padding=False)
         length = input_ids.input_ids.shape[1]
         logger.debug(f"{txt} -> {vectorizer.decode(input_ids)} ({length})")
-        sum += length
-    return sum / len(docs)
+        sum_tokens += length - 2  # Except cls and sep tokens
+    return sum_tokens / len(docs), sum_chars / len(docs)
 
 
 def _vectorize_doc(batch_docs, target_fields, bert_cls_field, vectorizer):
@@ -129,6 +132,17 @@ def post_documents(
         bulk_size (int): Bulk size
     """
     es.index(index, docs, bulk_size)
+
+
+def create_report_dir(report: Path):
+    reports_dir = report.parent
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+
+def print_summary(report: Path, avg_tokens: float, avg_chars: float):
+    with open(str(report), mode="w") as f:
+        f.write(f"Average char length = {avg_chars: .3f}\n")
+        f.write(f"Average token length = {avg_tokens: .3f}\n")
 
 
 def main():

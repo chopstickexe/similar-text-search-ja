@@ -1,0 +1,2 @@
+Average char length =  44.209
+Average token length =  26.648

@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Any, Dict, List
 
 from similar_text_search_ja import es as es_wrapper
@@ -64,16 +65,17 @@ def main():
 
     conf = __get_config()
 
+    report_path = Path(conf["mlit"]["index_report_path"])
+    index_base.create_report_dir(report_path)
+
     es = es_wrapper.ES([conf["es_url"]])
 
     __create_index(es, conf)
 
     vectorizer = vectorizers.JaVectorizer()
     docs = __get_documents(vectorizer, conf)
-    avg = index_base.get_stats(docs, vectorizer, conf)
-
-    logger = logging.getLogger(__name__)
-    logger.info(f"Average token length = {avg: .3f}")
+    avg_tokens, avg_chars = index_base.get_stats(docs, vectorizer, conf)
+    index_base.print_summary(report_path, avg_tokens, avg_chars)
 
     __post_documents(es, docs, conf)
 
