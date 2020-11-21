@@ -3,6 +3,7 @@ jupyter
 --find-links https://download.pytorch.org/whl/torch_stable.html
 torch==1.6.0+cu101
 elasticsearch
+sentence-transformers
 black  # formatter
 flake8  # linter
 pytest
