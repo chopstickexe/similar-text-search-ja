@@ -1,3 +1,4 @@
+import csv
 import logging
 from typing import Any, Dict, List
 
@@ -60,6 +61,27 @@ def get_documents(
     return ret
 
 
+def doc_generator(csv_path: str, batch_size: int):
+    file = open(csv_path, newline="", encoding="UTf-8")
+    reader = csv.DictReader(file)
+    docs = []
+    for row in reader:
+        docs.append(row)
+        if len(docs) == batch_size:
+            yield docs
+            docs = []
+    yield docs
+
+
+def add_vectors(
+    docs: List[Dict[str, Any]],
+    target_fields: List[str],
+    vector_field: str,
+    vectorizer: "vectorizers.JaVectorizer",
+):
+    _vectorize_doc(docs, target_fields, vector_field, vectorizer)
+
+
 def _vectorize_doc(batch_docs, target_fields, bert_cls_field, vectorizer):
     if not batch_docs or len(batch_docs) == 0:
         return
@@ -95,6 +117,7 @@ def post_documents(
 def main():
     """Example usage"""
     utils.set_root_logger()
+    logger = logging.getLogger(__name__)
 
     es = es_wrapper.ES(["es01:9200"])
     fields = {
@@ -109,12 +132,18 @@ def main():
     }
     index = "test"
     create_index(es=es, clear_index=True, index=index, fields=fields)
-    docs = get_documents(
-        csv_path="data/mlit/mlit.sample.csv",
-        target_fields=["申告内容の要約"],
-        vector_field="bert_cls_vec",
-        vectorizer=vectorizers.JaVectorizer(),
-    )
+
+    docs = []
+    for batch in doc_generator("data/mlit/mlit.sample.csv", batch_size=100):
+        logger.info(f"Vectorize {len(batch)} documents...")
+        add_vectors(
+            batch,
+            target_fields=["申告内容の要約"],
+            vector_field="bert_cls_vec",
+            vectorizer=vectorizers.JaVectorizer(),
+        )
+        docs.extend(batch)
+
     post_documents(es=es, index=index, docs=docs, bulk_size=1000)
     es.delete_index(index)
 
