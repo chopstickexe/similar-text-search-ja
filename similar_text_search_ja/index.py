@@ -7,36 +7,42 @@ from similar_text_search_ja import vectorizers
 
 
 def create_index(
-    es: "es_wrapper.ES",
-    clear_index: bool,
-    index: str,
-    date_field: str,
-    date_format: str,
-    bert_cls_field: str,
-    bert_vec_size: int,
+    es: "es_wrapper.ES", clear_index: bool, index: str, fields: Dict[str, Any]
 ):
+    """Create ES index
+
+    Args:
+        es (es_wrapper.ES): ES wrapper instance
+        clear_index (bool): True to delete existing index with the same name
+        index (str): index name
+        fields (Dict[str, Any]): field mapping settings
+    """
     if clear_index:
         es.delete_index(index)
 
     es.create_index(
         index,
-        body={
-            "mappings": {
-                "properties": {
-                    date_field: {"type": "date", "format": date_format},
-                    bert_cls_field: {"type": "dense_vector", "dims": bert_vec_size},
-                }
-            }
-        },
+        body={"mappings": {"properties": fields}},
     )
 
 
 def get_documents(
     csv_path: str,
     target_fields: List[str],
-    bert_cls_field: str,
+    vector_field: str,
     vectorizer: "vectorizers.JaVectorizer",
 ) -> List[Dict[str, Any]]:
+    """Read documents from a csv file and add a dense vector to each doc
+
+    Args:
+        csv_path (str): CSV path
+        target_fields (List[str]): Text fields
+        vector_field (str): Field to store dense vectors representing the text
+        vectorizer (vectorizers.JaVectorizer): Vectorizer instance
+
+    Returns:
+        List[Dict[str, Any]]: Documents with dense vectors
+    """
     logger = logging.getLogger(__name__)
     ret = []
     with csv_parser.CsvParser(csv_path) as parser:
@@ -44,12 +50,12 @@ def get_documents(
         for doc in parser:
             batch_docs.append(doc)
             if len(batch_docs) == 32:
-                _vectorize_doc(batch_docs, target_fields, bert_cls_field, vectorizer)
+                _vectorize_doc(batch_docs, target_fields, vector_field, vectorizer)
                 ret.extend(batch_docs)
                 batch_docs = []
                 if len(ret) % 1000 == 0:
                     logger.info(f"Vectorized {len(ret)} documents...")
-        _vectorize_doc(batch_docs, target_fields, bert_cls_field, vectorizer)
+        _vectorize_doc(batch_docs, target_fields, vector_field, vectorizer)
         ret.extend(batch_docs)
     return ret
 
@@ -75,4 +81,12 @@ def _get_target_fields_txt(doc: Dict[str, Any], target_fields: List[str]) -> str
 def post_documents(
     es: "es_wrapper.ES", index: str, docs: List[Dict[str, Any]], bulk_size: int
 ):
+    """Post documents to ES index
+
+    Args:
+        es (es_wrapper.ES): ES wrapper instance
+        index (str): Index name
+        docs (List[Dict[str, Any]]): Documents
+        bulk_size (int): Bulk size
+    """
     es.index(index, docs, bulk_size)
