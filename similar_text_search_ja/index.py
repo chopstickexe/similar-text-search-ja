@@ -82,6 +82,23 @@ def add_vectors(
     _vectorize_doc(docs, target_fields, vector_field, vectorizer)
 
 
+def get_stats(
+    docs: List[Dict[str, Any]],
+    vectorizer: "vectorizers.JaVectorizer",
+    conf: Dict[str, Any],
+):
+    logger = logging.getLogger(__name__)
+    target_fields = conf["mlit"]["target_fields"]
+    sum = 0
+    for doc in docs:
+        txt = _get_target_fields_txt(doc, target_fields)
+        input_ids = vectorizer.encode(txt, padding=False)
+        length = input_ids.input_ids.shape[1]
+        logger.debug(f"{txt} -> {vectorizer.decode(input_ids)} ({length})")
+        sum += length
+    return sum / len(docs)
+
+
 def _vectorize_doc(batch_docs, target_fields, bert_cls_field, vectorizer):
     if not batch_docs or len(batch_docs) == 0:
         return

@@ -13,6 +13,6 @@
         "ans_field": "不具合装置",
         "invalid_ans": "その他",
         "date_field": "受付日",
-        "date_format": "yyyy年MM月dd日"
+        "batch_size": 200
     }
 }

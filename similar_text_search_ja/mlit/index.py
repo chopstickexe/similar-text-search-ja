@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict, List
 
 from similar_text_search_ja import es as es_wrapper
@@ -29,15 +30,24 @@ def __create_index(es: "es_wrapper.ES", conf: Dict[str, Any]):
     )
 
 
-def __get_documents(conf: Dict[str, Any]):
+def __get_documents(vectorizer: "vectorizers.JaVectorizer", conf: Dict[str, Any]):
+    logger = logging.getLogger(__name__)
     mlit_conf = conf["mlit"]
 
-    return index_base.get_documents(
-        mlit_conf["csv_path"],
-        mlit_conf["target_fields"],
-        conf["bert_cls_field"],
-        vectorizers.JaVectorizer(),
-    )
+    docs = []
+    for batch in index_base.doc_generator(
+        mlit_conf["csv_path"], mlit_conf["batch_size"]
+    ):
+        index_base.add_vectors(
+            batch,
+            mlit_conf["target_fields"],
+            conf["bert_cls_field"],
+            vectorizer,
+        )
+        docs.extend(batch)
+        if len(docs) % 1000 == 0:
+            logger.info(f"Vectorized {len(docs)} documents...")
+    return docs
 
 
 def __post_documents(
@@ -58,7 +68,14 @@ def main():
 
     __create_index(es, conf)
 
-    __post_documents(es, __get_documents(conf), conf)
+    vectorizer = vectorizers.JaVectorizer()
+    docs = __get_documents(vectorizer, conf)
+    avg = index_base.get_stats(docs, vectorizer, conf)
+
+    logger = logging.getLogger(__name__)
+    logger.info(f"Average token length = {avg: .3f}")
+
+    __post_documents(es, docs, conf)
 
 
 if __name__ == "__main__":
