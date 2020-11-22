@@ -5,11 +5,7 @@ from typing import Any, Dict, List
 from similar_text_search_ja import es as es_wrapper
 from similar_text_search_ja import index as index_base
 from similar_text_search_ja import utils, vectorizers
-
-
-def __get_config():
-    config_file = utils.get_dir().parent / "config.json"
-    return utils.read_json_config(config_file)
+from similar_text_search_ja.mlit import config
 
 
 def __create_index(es: "es_wrapper.ES", conf: Dict[str, Any]):
@@ -63,7 +59,7 @@ def __post_documents(
 def main():
     utils.set_root_logger()
 
-    conf = __get_config()
+    conf = config.get_config()
 
     report_path = Path(conf["mlit"]["index_report_path"])
     index_base.create_report_dir(report_path)
