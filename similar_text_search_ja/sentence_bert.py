@@ -15,10 +15,10 @@ from torch.utils.data import DataLoader  # noqa: E402
 # Reference
 # https://github.com/UKPLab/sentence-transformers/blob/v0.3.9/examples/training/other/training_wikipedia_sections.py
 
-BATCH_SIZE = 4
-NUM_EPOCHS = 5
+BATCH_SIZE = 8
+NUM_EPOCHS = 1
 EVAL_STEPS = 1000
-OUTPUT_PATH = "models/mlit/sample"
+OUTPUT_PATH = "models/mlit/20200919"
 
 transformer = models.BERT("cl-tohoku/bert-base-japanese-whole-word-masking")
 
@@ -31,7 +31,7 @@ pooling = models.Pooling(
 
 model = SentenceTransformer(modules=[transformer, pooling], device='cuda')
 
-triplet_reader = TripletReader("data/mlit/triplets/sample")
+triplet_reader = TripletReader("data/mlit/triplets/20200919")
 train_data = SentencesDataset(triplet_reader.get_examples("train.tsv"), model=model)
 train_dataloader = DataLoader(train_data, shuffle=True, batch_size=BATCH_SIZE)
 train_loss = TripletLoss(
@@ -42,7 +42,7 @@ anchors = []
 positives = []
 negatives = []
 with open(
-    "data/mlit/triplets/sample/dev.tsv", mode="r", encoding="UTF-8", newline=""
+    "data/mlit/triplets/20200919/dev.tsv", mode="r", encoding="UTF-8", newline=""
 ) as f:
     for row in csv.reader(f, delimiter="\t"):
         anchors.append(row[0])
@@ -72,7 +72,7 @@ anchors = []
 positives = []
 negatives = []
 with open(
-    "data/mlit/triplets/sample/test.tsv", mode="r", encoding="UTF-8", newline=""
+    "data/mlit/triplets/20200919/test.tsv", mode="r", encoding="UTF-8", newline=""
 ) as f:
     for row in csv.reader(f, delimiter="\t"):
         anchors.append(row[0])
@@ -80,6 +80,6 @@ with open(
         negatives.append(row[2])
 
 
-model = SentenceTransformer(OUTPUT_PATH)
+model = SentenceTransformer(OUTPUT_PATH, device="cuda")
 test_evaluator = TripletEvaluator(anchors, positives, negatives, name='test')
 test_evaluator(model, output_path=OUTPUT_PATH)
