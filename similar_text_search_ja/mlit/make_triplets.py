@@ -1,5 +1,5 @@
 from random import randrange
-from typing import List, Set
+from typing import Set
 
 import numpy as np
 import pandas as pd
@@ -25,38 +25,47 @@ def __outside_group_rand(items, ids: Set[int]):
 
 
 def __generate_triplets(
-    df: pd.DataFrame, id_col: str, p_id_col: str, n_id_col: str, group_col: str
+    df: pd.DataFrame,
+    group_col: str,
+    txt_col: str,
+    t_txt_col: str,
+    p_txt_col: str,
+    n_txt_col: str,
 ):
     # https://stackoverflow.com/questions/57931505/pandas-sample-based-on-category-for-each-row
+    id_col = "id"
+    p_id_col = "pid"
+    n_id_col = "nid"
+
+    df[id_col] = df.index.to_series()
     df[p_id_col] = df.groupby(group_col)[id_col].transform(__sattolo_cycle)
     df[n_id_col] = df.groupby(group_col)[id_col].transform(
         __outside_group_rand, set(df[id_col])
     )
 
+    ret_df = df[[txt_col, p_id_col, n_id_col]].rename(columns={txt_col: t_txt_col})
+    ret_df = ret_df.join(df[txt_col], on=p_id_col).rename(columns={txt_col: p_txt_col})
+    ret_df = ret_df.join(df[txt_col], on=n_id_col).rename(columns={txt_col: n_txt_col})
+    return ret_df[[t_txt_col, p_txt_col, n_txt_col]]
 
-def __to_tsv(df: pd.DataFrame, csv_path: str, columns: List[str]):
-    df.to_csv(csv_path, header=False, index=False, columns=columns, sep="\t")
+
+def __to_tsv(df: pd.DataFrame, csv_path: str):
+    df.to_csv(csv_path, header=False, index=False, sep="\t")
 
 
 def main():
     conf = config.get_config()
     mlit_conf = conf["mlit"]
-    id_col = "id"
     txt_col = mlit_conf["target_fields"][0]  # TODO Should concat all the target fields
-    p_id_col = "pid"
-    n_id_col = "nid"
     p_txt_col = "p"
     n_txt_col = "n"
     t_txt_col = "t"  # target text
 
     df = __get_documents(mlit_conf["csv_path"])
-    df[id_col] = df.index.to_series()
-
-    __generate_triplets(df, id_col, p_id_col, n_id_col, mlit_conf["ans_field"])
-    ret_df = df[[txt_col, p_id_col, n_id_col]].rename(columns={txt_col: t_txt_col})
-    ret_df = ret_df.join(df[txt_col], on=p_id_col).rename(columns={txt_col: p_txt_col})
-    ret_df = ret_df.join(df[txt_col], on=n_id_col).rename(columns={txt_col: n_txt_col})
-    __to_tsv(ret_df, mlit_conf["triplet_tsv_path"], [t_txt_col, p_txt_col, n_txt_col])
+    df = __generate_triplets(
+        df, mlit_conf["ans_field"], txt_col, t_txt_col, p_txt_col, n_txt_col
+    )
+    __to_tsv(df, mlit_conf["triplet_tsv_path"])
 
 
 if __name__ == "__main__":
