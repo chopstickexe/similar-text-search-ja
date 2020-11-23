@@ -9,7 +9,7 @@ class Config:
         self._values = utils.read_json_config(config_file)
         self.es_url = self._values["es_url"]
         self.es_embedding_field = self._values["es_embedding_field"]
-        self.vect_config = self._values["vect_config"]
+        self.transformer_model = self._values["transformer_model"]
 
         self._dataset = self._values["datasets"][dataset]
         self.es_always_clear_index = self._dataset["es_always_clear_index"]
