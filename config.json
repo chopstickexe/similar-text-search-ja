@@ -1,21 +1,46 @@
 {
     "es_url": "es01:9200",
-    "es_embedding_field": "bert_cls_vec",
-    "mlit":{
-        "es_index": "mlit",
-        "es_always_clear_index": "True",
-        "es_bulk_size": 2000,
-        "csv_path": "data/mlit/raw/mlit.20200919.cleaned.csv",
-        "triplet_dataset_dir": "data/mlit/triplets/20200919",
-        "report_dir": "reports/mlit",
-        "test_id_min": 56777,
-        "test_id_max": 57777,
-        "target_fields": ["申告内容の要約"],
-        "ans_field": "不具合装置",
-        "invalid_ans": "その他",
-        "date_field": "受付日",
-        "date_format": "yyyy年MM月dd日",
-        "vect_batch_size": 100,
-        "index_report_path": "reports/mlit/index.txt"
+    "es_embedding_field": "embeddings",
+    "datasets": {
+        "mlit-sample": {
+            "es_always_clear_index": "True",
+            "es_bulk_size": 2000,
+            "es_base_index_settings": {
+                "受付日": {
+                    "type": "date",
+                    "format": "yyyy年MM月dd日",
+                }
+            },
+            "vect_batch_size": 100,
+            "raw_csv_path": "data/mlit-sample/raw/mlit.sample.csv",
+            "test_id_min": 56777,
+            "test_id_max": 57777,
+            "target_fields": [
+                "申告内容の要約"
+            ],
+            "ans_field": "不具合装置",
+            "invalid_ans": "その他"
+        },
+        "mlit-large": {
+            "es_always_clear_index": "True",
+            "es_bulk_size": 2000,
+            "es_base_index_settings": {
+                "受付日": {
+                    "type": "date",
+                    "format": "yyyy年MM月dd日",
+                }
+            },
+            "vect_batch_size": 100,
+            "raw_csv_path": "data/mlit/raw/mlit.20200919.cleaned.csv",
+            "triplet_dataset_dir": "data/mlit/triplets/20200919",
+            "report_dir": "reports/mlit",
+            "test_id_min": 21,
+            "test_id_max": 30,
+            "target_fields": [
+                "申告内容の要約"
+            ],
+            "ans_field": "不具合装置",
+            "invalid_ans": "その他"
+        }
     }
 }
