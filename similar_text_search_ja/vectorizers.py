@@ -12,6 +12,18 @@ class BaseVectorizer(ABC):
     def create(cls: "BaseVectorizer", config: Dict[str, Any]):
         raise NotImplementedError
 
+    @abstractmethod
+    def encode(self, sentences: List[str], padding: bool = True):
+        raise NotImplementedError
+
+    @abstractmethod
+    def decode(self, encode_result):
+        raise NotImplementedError
+
+    @abstractmethod
+    def vectorize(self, input_ids):
+        raise NotImplementedError
+
 
 @dataclass
 class HuggingfaceVectorizerConfig:
