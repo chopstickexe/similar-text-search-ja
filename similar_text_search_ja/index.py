@@ -6,8 +6,7 @@ from typing import Any, Dict, List
 from similar_text_search_ja import csv_parser
 from similar_text_search_ja import es as es_wrapper
 from similar_text_search_ja import utils
-from similar_text_search_ja.vectorizers import (BaseVectorizer,
-                                                HuggingfaceVectorizer)
+from similar_text_search_ja.vectorizers import BaseVectorizer, HuggingfaceVectorizer
 
 
 def create_index(
@@ -166,13 +165,13 @@ def main():
     index = "test"
     create_index(es=es, clear_index=True, index=index, fields=fields)
 
+    config = {
+        "tokenizer_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
+        "model_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
+    }
     docs = []
     for batch in doc_generator("data/mlit/raw/mlit.sample.csv", batch_size=100):
         logger.info(f"Vectorize {len(batch)} documents...")
-        config = {
-            "tokenizer_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
-            "model_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
-        }
         add_vectors(
             batch,
             target_fields=["申告内容の要約"],
