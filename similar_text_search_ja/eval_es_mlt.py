@@ -68,7 +68,7 @@ def main():
         mlit_conf["es_index"],
         mlit_conf["test_id_min"],
         mlit_conf["test_id_max"],
-        conf["bert_cls_field"],
+        conf["embedding_field"],
         mlit_conf["ans_field"],
         mlit_conf["invalid_ans"],
     )
