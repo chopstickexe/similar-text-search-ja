@@ -33,6 +33,7 @@ class HuggingfaceVectorizer(BaseVectorizer):
             output_hidden_states=True,
             return_dict=True,
         )
+        self.word_embedding_dim = self.model.config.hidden_size
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = self.model.to(self.device)
 

@@ -10,7 +10,7 @@ from similar_text_search_ja.vectorizers import (BaseVectorizer,
                                                 HuggingfaceVectorizer)
 
 
-def __create_index(es: "es_wrapper.ES", conf: Dict[str, Any]):
+def __create_index(es: "es_wrapper.ES", dim_size: int, conf: Dict[str, Any]):
     mlit_conf = conf["mlit"]
     index_base.create_index(
         es,
@@ -23,7 +23,7 @@ def __create_index(es: "es_wrapper.ES", conf: Dict[str, Any]):
             },
             conf["bert_cls_field"]: {
                 "type": "dense_vector",
-                "dims": conf["bert_vec_size"],
+                "dims": dim_size,
             },
         },
     )
@@ -68,13 +68,13 @@ def main():
 
     es = es_wrapper.ES([conf["es_url"]])
 
-    __create_index(es, conf)
-
     vectorizer_config = {
         "tokenizer_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
         "model_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
     }
     vectorizer = HuggingfaceVectorizer.create(vectorizer_config)
+    __create_index(es, vectorizer.word_embedding_dim, conf)
+
     docs = __get_documents(vectorizer, conf)
     avg_tokens, avg_chars = index_base.get_stats(docs, vectorizer, conf)
     index_base.print_summary(report_path, avg_tokens, avg_chars)
