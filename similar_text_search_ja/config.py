@@ -9,6 +9,7 @@ class Config:
         self._values = utils.read_json_config(config_file)
         self.es_url = self._values["es_url"]
         self.es_embedding_field = self._values["es_embedding_field"]
+        self.vect_config = self._values["vect_config"]
 
         self._dataset = self._values["datasets"][dataset]
         self.es_always_clear_index = self._dataset["es_always_clear_index"]
@@ -22,7 +23,10 @@ class Config:
 
         self.es_index_name = dataset
         self.data_dir = Path("data") / dataset
-        self.data_triplets_dir = self.data_root / "triplets"
+        self.data_triplets_dir = self.data_dir / "triplets"
         self.model_dir = Path("models") / dataset
         self.report_dir = Path("reports") / dataset
 
+
+def create_dir(dir: Path):
+    dir.mkdir(parents=True, exist_ok=True)
