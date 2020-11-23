@@ -58,13 +58,17 @@ def __post_documents(
     )
 
 
+def __create_report_dir(report_dir: Path):
+    index_base.create_report_dir(report_dir)
+
+
 def main():
     utils.set_root_logger()
 
     conf = config.get_config()
 
-    report_path = Path(conf["mlit"]["index_report_path"])
-    index_base.create_report_dir(report_path)
+    report_dir = Path(conf["mlit"]["report_dir"])
+    __create_report_dir(report_dir)
 
     es = es_wrapper.ES([conf["es_url"]])
 
@@ -77,7 +81,7 @@ def main():
 
     docs = __get_documents(vectorizer, conf)
     avg_tokens, avg_chars = index_base.get_stats(docs, vectorizer, conf)
-    index_base.print_summary(report_path, avg_tokens, avg_chars)
+    index_base.print_summary(report_dir / "index.txt", avg_tokens, avg_chars)
 
     __post_documents(es, docs, conf)
 
