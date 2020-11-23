@@ -137,8 +137,6 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-data/**/*
-!data/mlit/raw/mlit.sample.csv
-!data/mlit/triplets/sample/*.tsv
+data/mlit-large
 .vscode
 models
