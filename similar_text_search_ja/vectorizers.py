@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Any, Dict, List
 
 import torch
+from sentence_transformers import SentenceTransformer
 from transformers import AutoModel, AutoTokenizer
 
 
@@ -44,7 +44,7 @@ class HuggingfaceVectorizer(BaseVectorizer):
         self.model = self.model.to(self.device)
 
     @classmethod
-    def create(cls: "BaseVectorizer", config: Dict[str, Any]):
+    def create(cls: "HuggingfaceVectorizer", config: Dict[str, Any]):
         return cls(config[cls.CONF_KEY_MODEL_NAME])
 
     def encode(self, sentences: List[str], padding: bool = True):
@@ -64,4 +64,37 @@ class HuggingfaceVectorizer(BaseVectorizer):
 
 
 class SentenceVectorizer(BaseVectorizer):
-    pass
+    """Vectorize text by using sentence transformers
+    https://github.com/UKPLab/sentence-transformers
+    """
+
+    CONF_KEY_TRAINED_MODEL_PATH = "model_path"
+    CONF_KEY_TRANSFORMER_MODEL_NAME = "transformer_model_name"
+
+    def __init__(self, model_path: str, transformer_model_name: str):
+        # Reference:
+        # https://github.com/UKPLab/sentence-transformers/blob/e0aa596a0397a41ba69f75c1124318f0cb1dceca/sentence_transformers/models/Transformer.py
+        self.model = SentenceTransformer(model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(transformer_model_name)
+        self.model.tokenizer = self.tokenizer
+        self.word_embedding_dim = self.model.get_sentence_embedding_dimension()
+
+    @classmethod
+    def create(cls: "SentenceVectorizer", config: Dict[str, Any]):
+        return cls(
+            config[cls.CONF_KEY_TRAINED_MODEL_PATH],
+            config[cls.CONF_KEY_TRANSFORMER_MODEL_NAME],
+        )
+
+    def encode(self, sentences: List[str], padding: bool = True):
+        if len(sentences) == 0:
+            return None
+        return self.model.tokenizer(sentences, return_tensors="pt", padding=padding)
+
+    def decode(self, encode_result):
+        return self.model.tokenizer.convert_ids_to_tokens(
+            encode_result.input_ids.flatten().tolist()
+        )
+
+    def vectorize(self, sentences):
+        return self.model.encode(sentences)
