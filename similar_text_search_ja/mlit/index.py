@@ -21,7 +21,7 @@ def __create_index(es: "es_wrapper.ES", dim_size: int, conf: Dict[str, Any]):
                 "type": "date",
                 "format": mlit_conf["date_format"],
             },
-            conf["embedding_field"]: {
+            conf["es_embedding_field"]: {
                 "type": "dense_vector",
                 "dims": dim_size,
             },
@@ -40,7 +40,7 @@ def __get_documents(vectorizer: "BaseVectorizer", conf: Dict[str, Any]):
         index_base.add_vectors(
             batch,
             mlit_conf["target_fields"],
-            conf["embedding_field"],
+            conf["es_embedding_field"],
             vectorizer,
         )
         docs.extend(batch)

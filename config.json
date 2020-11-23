@@ -1,6 +1,6 @@
 {
     "es_url": "es01:9200",
-    "embedding_field": "bert_cls_vec",
+    "es_embedding_field": "bert_cls_vec",
     "mlit":{
         "es_index": "mlit",
         "es_always_clear_index": "True",
