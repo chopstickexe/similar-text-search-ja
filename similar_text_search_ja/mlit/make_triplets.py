@@ -80,7 +80,7 @@ def main():
     dir_path = Path(mlit_conf["triplet_dataset_dir"])
     __create_dataset_dir(dir_path)
 
-    df = __get_documents(mlit_conf["csv_path"])
+    df = __get_documents(mlit_conf["raw_csv_path"])
     df = __generate_triplets(
         df, mlit_conf["ans_field"], txt_col, t_txt_col, p_txt_col, n_txt_col
     )
