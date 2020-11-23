@@ -1,6 +1,10 @@
 {
     "es_url": "es01:9200",
     "es_embedding_field": "embeddings",
+    "vect_config": {
+        "tokenizer_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
+        "model_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking"
+    },
     "datasets": {
         "mlit-sample": {
             "es_always_clear_index": "True",
@@ -8,13 +12,13 @@
             "es_base_index_settings": {
                 "受付日": {
                     "type": "date",
-                    "format": "yyyy年MM月dd日",
+                    "format": "yyyy年MM月dd日"
                 }
             },
             "vect_batch_size": 100,
             "raw_csv_path": "data/mlit-sample/raw/mlit.sample.csv",
-            "test_id_min": 56777,
-            "test_id_max": 57777,
+            "test_id_min": 21,
+            "test_id_max": 30,
             "target_fields": [
                 "申告内容の要約"
             ],
@@ -27,15 +31,13 @@
             "es_base_index_settings": {
                 "受付日": {
                     "type": "date",
-                    "format": "yyyy年MM月dd日",
+                    "format": "yyyy年MM月dd日"
                 }
             },
             "vect_batch_size": 100,
-            "raw_csv_path": "data/mlit/raw/mlit.20200919.cleaned.csv",
-            "triplet_dataset_dir": "data/mlit/triplets/20200919",
-            "report_dir": "reports/mlit",
-            "test_id_min": 21,
-            "test_id_max": 30,
+            "raw_csv_path": "data/mlit-large/raw/mlit.20200919.cleaned.csv",
+            "test_id_min": 56777,
+            "test_id_max": 57777,
             "target_fields": [
                 "申告内容の要約"
             ],
