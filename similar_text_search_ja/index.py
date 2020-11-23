@@ -5,7 +5,9 @@ from typing import Any, Dict, List
 
 from similar_text_search_ja import csv_parser
 from similar_text_search_ja import es as es_wrapper
-from similar_text_search_ja import utils, vectorizers
+from similar_text_search_ja import utils
+from similar_text_search_ja.vectorizers import (BaseVectorizer,
+                                                HuggingfaceVectorizer)
 
 
 def create_index(
@@ -32,7 +34,7 @@ def get_documents(
     csv_path: str,
     target_fields: List[str],
     vector_field: str,
-    vectorizer: "vectorizers.JaVectorizer",
+    vectorizer: "BaseVectorizer",
 ) -> List[Dict[str, Any]]:
     """Read documents from a csv file and add a dense vector to each doc
 
@@ -40,7 +42,7 @@ def get_documents(
         csv_path (str): CSV path
         target_fields (List[str]): Text fields
         vector_field (str): Field to store dense vectors representing the text
-        vectorizer (vectorizers.JaVectorizer): Vectorizer instance
+        vectorizer (BaseVectorizer): Vectorizer instance
 
     Returns:
         List[Dict[str, Any]]: Documents with dense vectors
@@ -78,14 +80,14 @@ def add_vectors(
     docs: List[Dict[str, Any]],
     target_fields: List[str],
     vector_field: str,
-    vectorizer: "vectorizers.JaVectorizer",
+    vectorizer: "BaseVectorizer",
 ):
     _vectorize_doc(docs, target_fields, vector_field, vectorizer)
 
 
 def get_stats(
     docs: List[Dict[str, Any]],
-    vectorizer: "vectorizers.JaVectorizer",
+    vectorizer: "BaseVectorizer",
     conf: Dict[str, Any],
 ):
     logger = logging.getLogger(__name__)
@@ -165,13 +167,17 @@ def main():
     create_index(es=es, clear_index=True, index=index, fields=fields)
 
     docs = []
-    for batch in doc_generator("data/mlit/mlit.sample.csv", batch_size=100):
+    for batch in doc_generator("data/mlit/raw/mlit.sample.csv", batch_size=100):
         logger.info(f"Vectorize {len(batch)} documents...")
+        config = {
+            "tokenizer_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
+            "model_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
+        }
         add_vectors(
             batch,
             target_fields=["申告内容の要約"],
             vector_field="bert_cls_vec",
-            vectorizer=vectorizers.JaVectorizer(),
+            vectorizer=HuggingfaceVectorizer.create(config),
         )
         docs.extend(batch)
 

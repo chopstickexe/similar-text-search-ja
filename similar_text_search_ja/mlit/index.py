@@ -4,8 +4,10 @@ from typing import Any, Dict, List
 
 from similar_text_search_ja import es as es_wrapper
 from similar_text_search_ja import index as index_base
-from similar_text_search_ja import utils, vectorizers
+from similar_text_search_ja import utils
 from similar_text_search_ja.mlit import config
+from similar_text_search_ja.vectorizers import (BaseVectorizer,
+                                                HuggingfaceVectorizer)
 
 
 def __create_index(es: "es_wrapper.ES", conf: Dict[str, Any]):
@@ -27,7 +29,7 @@ def __create_index(es: "es_wrapper.ES", conf: Dict[str, Any]):
     )
 
 
-def __get_documents(vectorizer: "vectorizers.JaVectorizer", conf: Dict[str, Any]):
+def __get_documents(vectorizer: "BaseVectorizer", conf: Dict[str, Any]):
     logger = logging.getLogger(__name__)
     mlit_conf = conf["mlit"]
 
@@ -68,7 +70,11 @@ def main():
 
     __create_index(es, conf)
 
-    vectorizer = vectorizers.JaVectorizer()
+    vectorizer_config = {
+        "tokenizer_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
+        "model_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
+    }
+    vectorizer = HuggingfaceVectorizer.create(vectorizer_config)
     docs = __get_documents(vectorizer, conf)
     avg_tokens, avg_chars = index_base.get_stats(docs, vectorizer, conf)
     index_base.print_summary(report_path, avg_tokens, avg_chars)
