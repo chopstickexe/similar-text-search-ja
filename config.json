@@ -14,7 +14,7 @@
         "invalid_ans": "その他",
         "date_field": "受付日",
         "date_format": "yyyy年MM月dd日",
-        "batch_size": 100,
+        "vect_batch_size": 100,
         "index_report_path": "reports/mlit/index.txt"
     }
 }
