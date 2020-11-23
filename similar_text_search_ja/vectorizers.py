@@ -37,11 +37,9 @@ class HuggingfaceVectorizer(BaseVectorizer):
     def __init__(self, tokenizer_name_or_path: str, model_name_or_path):
         # Reference:
         # https://github.com/UKPLab/sentence-transformers/blob/e0aa596a0397a41ba69f75c1124318f0cb1dceca/sentence_transformers/models/Transformer.py
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            "cl-tohoku/bert-base-japanese-whole-word-masking"
-        )
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path)
         self.model = AutoModel.from_pretrained(
-            "cl-tohoku/bert-base-japanese-whole-word-masking",
+            model_name_or_path,
             output_hidden_states=True,
             return_dict=True,
         )
