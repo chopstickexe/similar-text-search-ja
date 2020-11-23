@@ -22,8 +22,13 @@ class Config:
         self.invalid_ans = self._dataset["invalid_ans"]
 
         self.es_index_name = dataset
+
         self.data_dir = Path("data") / dataset
         self.data_triplets_dir = self.data_dir / "triplets"
+        self.data_triplets_train_path = self.data_triplets_dir / "train.tsv"
+        self.data_triplets_dev_path = self.data_triplets_dir / "dev.tsv"
+        self.data_triplets_test_path = self.data_triplets_dir / "test.tsv"
+
         self.model_dir = Path("models") / dataset
         self.report_dir = Path("reports") / dataset
 
