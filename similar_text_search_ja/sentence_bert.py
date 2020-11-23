@@ -8,7 +8,10 @@ transformers.BertTokenizer = transformers.BertJapaneseTokenizer
 from sentence_transformers import SentenceTransformer, models  # noqa: E402
 from sentence_transformers.datasets import SentencesDataset  # noqa: E402
 from sentence_transformers.evaluation import TripletEvaluator  # noqa: E402
-from sentence_transformers.losses import TripletDistanceMetric, TripletLoss  # noqa: E402
+from sentence_transformers.losses import (  # noqa: E402
+    TripletDistanceMetric,
+    TripletLoss,
+)
 from sentence_transformers.readers import TripletReader  # noqa: E402
 from torch.utils.data import DataLoader  # noqa: E402
 
@@ -31,7 +34,7 @@ pooling = models.Pooling(
     pooling_mode_max_tokens=False,
 )
 
-model = SentenceTransformer(modules=[transformer, pooling], device='cuda')
+model = SentenceTransformer(modules=[transformer, pooling], device="cuda")
 
 triplet_reader = TripletReader(DATA_PATH)
 train_data = SentencesDataset(triplet_reader.get_examples("train.tsv"), model=model)
@@ -43,8 +46,7 @@ train_loss = TripletLoss(
 anchors = []
 positives = []
 negatives = []
-with open(DATA_PATH + "/dev.tsv", mode="r", encoding="UTF-8", newline=""
-) as f:
+with open(DATA_PATH + "/dev.tsv", mode="r", encoding="UTF-8", newline="") as f:
     for row in csv.reader(f, delimiter="\t"):
         anchors.append(row[0])
         positives.append(row[1])
@@ -52,7 +54,7 @@ with open(DATA_PATH + "/dev.tsv", mode="r", encoding="UTF-8", newline=""
 
 dev_data = SentencesDataset(triplet_reader.get_examples("dev.tsv"), model=model)
 dev_dataloader = DataLoader(dev_data, shuffle=False, batch_size=BATCH_SIZE)
-evaluator = TripletEvaluator(anchors, positives, negatives, name='dev')
+evaluator = TripletEvaluator(anchors, positives, negatives, name="dev")
 
 logging.info("Read Wikipedia Triplet dev dataset")
 dev_examples = []
@@ -72,9 +74,7 @@ logging.info("Read test examples")
 anchors = []
 positives = []
 negatives = []
-with open(
-    DATA_PATH + "/test.tsv", mode="r", encoding="UTF-8", newline=""
-) as f:
+with open(DATA_PATH + "/test.tsv", mode="r", encoding="UTF-8", newline="") as f:
     for row in csv.reader(f, delimiter="\t"):
         anchors.append(row[0])
         positives.append(row[1])
@@ -82,5 +82,5 @@ with open(
 
 
 model = SentenceTransformer(OUTPUT_PATH, device="cuda")
-test_evaluator = TripletEvaluator(anchors, positives, negatives, name='test')
+test_evaluator = TripletEvaluator(anchors, positives, negatives, name="test")
 test_evaluator(model, output_path=OUTPUT_PATH)
