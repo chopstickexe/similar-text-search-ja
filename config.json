@@ -1,7 +1,6 @@
 {
     "es_url": "es01:9200",
     "bert_cls_field": "bert_cls_vec",
-    "bert_vec_size": 768,
     "mlit":{
         "es_index": "mlit",
         "es_always_clear_index": "True",

@@ -152,6 +152,12 @@ def main():
     logger = logging.getLogger(__name__)
 
     es = es_wrapper.ES(["es01:9200"])
+
+    vectorizer_config = {
+        "tokenizer_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
+        "model_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
+    }
+    vectorizer = HuggingfaceVectorizer.create(vectorizer_config)
     fields = {
         "受付日": {
             "type": "date",
@@ -159,16 +165,12 @@ def main():
         },
         "bert_cls_vec": {
             "type": "dense_vector",
-            "dims": 768,
+            "dims": vectorizer.word_embedding_dim,
         },
     }
     index = "test"
     create_index(es=es, clear_index=True, index=index, fields=fields)
 
-    config = {
-        "tokenizer_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
-        "model_name_or_path": "cl-tohoku/bert-base-japanese-whole-word-masking",
-    }
     docs = []
     for batch in doc_generator("data/mlit/raw/mlit.sample.csv", batch_size=100):
         logger.info(f"Vectorize {len(batch)} documents...")
@@ -176,7 +178,7 @@ def main():
             batch,
             target_fields=["申告内容の要約"],
             vector_field="bert_cls_vec",
-            vectorizer=HuggingfaceVectorizer.create(config),
+            vectorizer=vectorizer,
         )
         docs.extend(batch)
 
