@@ -8,8 +8,7 @@ from similar_text_search_ja import config
 from similar_text_search_ja import es as es_wrapper
 from similar_text_search_ja import utils
 from similar_text_search_ja.config import Config
-from similar_text_search_ja.vectorizers import (BaseVectorizer,
-                                                HuggingfaceVectorizer)
+from similar_text_search_ja.vectorizers import BaseVectorizer, HuggingfaceVectorizer
 
 
 def create_index(
@@ -44,15 +43,6 @@ def doc_generator(csv_path: str, batch_size: int):
     yield docs
 
 
-def add_vectors(
-    docs: List[Dict[str, Any]],
-    target_fields: List[str],
-    vector_field: str,
-    vectorizer: "BaseVectorizer",
-):
-    _vectorize_doc(docs, target_fields, vector_field, vectorizer)
-
-
 def get_stats(
     docs: List[Dict[str, Any]],
     vectorizer: "BaseVectorizer",
@@ -63,7 +53,7 @@ def get_stats(
     sum_tokens = 0
     sum_chars = 0
     for doc in docs:
-        txt = _get_target_fields_txt(doc, target_fields)
+        txt = get_target_fields_txt(doc, target_fields)
         sum_chars += len(txt)
         input_ids = vectorizer.encode(txt, padding=False)
         length = input_ids.input_ids.shape[1]
@@ -72,10 +62,15 @@ def get_stats(
     return sum_tokens / len(docs), sum_chars / len(docs)
 
 
-def _vectorize_doc(batch_docs, target_fields, es_embedding_field, vectorizer):
+def vectorize_doc(
+    batch_docs: List[Dict[str, Any]],
+    target_fields: List[str],
+    es_embedding_field: str,
+    vectorizer: "BaseVectorizer",
+):
     if not batch_docs or len(batch_docs) == 0:
         return
-    batch_txts = [_get_target_fields_txt(doc, target_fields) for doc in batch_docs]
+    batch_txts = [get_target_fields_txt(doc, target_fields) for doc in batch_docs]
     input_ids = vectorizer.encode(batch_txts)
     outputs = vectorizer.vectorize(input_ids)
     assert len(outputs.last_hidden_state) == len(batch_docs)
@@ -83,7 +78,7 @@ def _vectorize_doc(batch_docs, target_fields, es_embedding_field, vectorizer):
         doc[es_embedding_field] = outputs.last_hidden_state[i][0][:].tolist()
 
 
-def _get_target_fields_txt(doc: Dict[str, Any], target_fields: List[str]) -> str:
+def get_target_fields_txt(doc: Dict[str, Any], target_fields: List[str]) -> str:
     ret = " ".join(
         [doc[field] for field in target_fields if field in doc and doc[field]]
     )
@@ -131,9 +126,9 @@ def main():
 
     es = es_wrapper.ES([conf.es_url])
 
-    vectorizer = HuggingfaceVectorizer.create({
-        HuggingfaceVectorizer.CONF_KEY_MODEL_NAME: conf.transformer_model
-    })
+    vectorizer = HuggingfaceVectorizer.create(
+        {HuggingfaceVectorizer.CONF_KEY_MODEL_NAME: conf.transformer_model}
+    )
     field_settings = __get_es_index_settings(
         conf.es_base_index_settings,
         conf.es_embedding_field,
@@ -146,11 +141,11 @@ def main():
     docs = []
     for batch in doc_generator(conf.raw_csv_path, batch_size=conf.vect_batch_size):
         logger.info(f"Vectorize {len(batch)} documents...")
-        add_vectors(
+        vectorize_doc(
             batch,
-            target_fields=conf.target_fields,
-            vector_field=conf.es_embedding_field,
-            vectorizer=vectorizer,
+            conf.target_fields,
+            conf.es_embedding_field,
+            vectorizer,
         )
         docs.extend(batch)
 
