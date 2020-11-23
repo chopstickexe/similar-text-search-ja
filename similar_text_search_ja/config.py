@@ -21,6 +21,10 @@ class Config:
         self.ans_field = self._dataset["ans_field"]
         self.invalid_ans = self._dataset["invalid_ans"]
 
+        self.sent_transformer_train_batch_size = self._dataset["sent_transformer_train_batch_size"]
+        self.sent_transformer_train_epochs = self._dataset["sent_transformer_train_epochs"]
+        self.sent_transformer_train_eval_steps = self._dataset["sent_transformer_train_eval_steps"]
+
         self.es_index_name = dataset
 
         self.data_dir = Path("data") / dataset

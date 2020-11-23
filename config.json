@@ -20,7 +20,10 @@
                 "申告内容の要約"
             ],
             "ans_field": "不具合装置",
-            "invalid_ans": "その他"
+            "invalid_ans": "その他",
+            "sent_transformer_train_batch_size": 8,
+            "sent_transformer_train_epochs": 4,
+            "sent_transformer_train_eval_steps": 200
         },
         "mlit-large": {
             "es_always_clear_index": "True",
@@ -39,7 +42,10 @@
                 "申告内容の要約"
             ],
             "ans_field": "不具合装置",
-            "invalid_ans": "その他"
+            "invalid_ans": "その他",
+            "sent_transformer_train_batch_size": 8,
+            "sent_transformer_train_epochs": 4,
+            "sent_transformer_train_eval_steps": 200
         }
     }
 }
