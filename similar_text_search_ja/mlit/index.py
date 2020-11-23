@@ -35,7 +35,7 @@ def __get_documents(vectorizer: "BaseVectorizer", conf: Dict[str, Any]):
 
     docs = []
     for batch in index_base.doc_generator(
-        mlit_conf["csv_path"], mlit_conf["batch_size"]
+        mlit_conf["csv_path"], mlit_conf["vect_batch_size"]
     ):
         index_base.add_vectors(
             batch,
