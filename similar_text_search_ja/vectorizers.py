@@ -25,21 +25,17 @@ class BaseVectorizer(ABC):
         raise NotImplementedError
 
 
-@dataclass
-class HuggingfaceVectorizerConfig:
-    tokenizer_name_or_path: str
-    model_name_or_path: str
-
-
 class HuggingfaceVectorizer(BaseVectorizer):
     """Vectorize text by using a Huggingface transformer"""
 
-    def __init__(self, tokenizer_name_or_path: str, model_name_or_path):
+    CONF_KEY_MODEL_NAME = "model_name"
+
+    def __init__(self, model_name: str):
         # Reference:
         # https://github.com/UKPLab/sentence-transformers/blob/e0aa596a0397a41ba69f75c1124318f0cb1dceca/sentence_transformers/models/Transformer.py
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(
-            model_name_or_path,
+            model_name,
             output_hidden_states=True,
             return_dict=True,
         )
@@ -49,7 +45,7 @@ class HuggingfaceVectorizer(BaseVectorizer):
 
     @classmethod
     def create(cls: "BaseVectorizer", config: Dict[str, Any]):
-        return cls(config["tokenizer_name_or_path"], config["model_name_or_path"])
+        return cls(config[cls.CONF_KEY_MODEL_NAME])
 
     def encode(self, sentences: List[str], padding: bool = True):
         if len(sentences) == 0:

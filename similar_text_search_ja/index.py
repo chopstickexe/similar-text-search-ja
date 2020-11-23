@@ -131,7 +131,9 @@ def main():
 
     es = es_wrapper.ES([conf.es_url])
 
-    vectorizer = HuggingfaceVectorizer.create(conf.vect_config)
+    vectorizer = HuggingfaceVectorizer.create({
+        HuggingfaceVectorizer.CONF_KEY_MODEL_NAME: conf.transformer_model
+    })
     field_settings = __get_es_index_settings(
         conf.es_base_index_settings,
         conf.es_embedding_field,
