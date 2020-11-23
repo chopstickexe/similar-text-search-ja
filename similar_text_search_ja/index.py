@@ -103,7 +103,7 @@ def get_stats(
     return sum_tokens / len(docs), sum_chars / len(docs)
 
 
-def _vectorize_doc(batch_docs, target_fields, bert_cls_field, vectorizer):
+def _vectorize_doc(batch_docs, target_fields, embedding_field, vectorizer):
     if not batch_docs or len(batch_docs) == 0:
         return
     batch_txts = [_get_target_fields_txt(doc, target_fields) for doc in batch_docs]
@@ -111,7 +111,7 @@ def _vectorize_doc(batch_docs, target_fields, bert_cls_field, vectorizer):
     outputs = vectorizer.vectorize(input_ids)
     assert len(outputs.last_hidden_state) == len(batch_docs)
     for i, doc in enumerate(batch_docs):
-        doc[bert_cls_field] = outputs.last_hidden_state[i][0][:].tolist()
+        doc[embedding_field] = outputs.last_hidden_state[i][0][:].tolist()
 
 
 def _get_target_fields_txt(doc: Dict[str, Any], target_fields: List[str]) -> str:
