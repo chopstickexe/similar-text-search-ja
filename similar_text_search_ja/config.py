@@ -17,6 +17,8 @@ class Config:
         self.es_base_index_settings = self._dataset["es_base_index_settings"]
         self.vect_batch_size = self._dataset["vect_batch_size"]
         self.raw_csv_path = Path(self._dataset["raw_csv_path"])
+        self.test_id_min = self._dataset["test_id_min"]
+        self.test_id_max = self._dataset["test_id_max"]
         self.target_fields = self._dataset["target_fields"]
         self.ans_field = self._dataset["ans_field"]
         self.invalid_ans = self._dataset["invalid_ans"]
