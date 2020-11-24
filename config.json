@@ -14,8 +14,8 @@
             },
             "vect_batch_size": 100,
             "raw_csv_path": "data/mlit-sample/raw/mlit.sample.csv",
-            "test_id_min": 21,
-            "test_id_max": 30,
+            "test_id_min": 20,
+            "test_id_max": 29,
             "target_fields": [
                 "申告内容の要約"
             ],
