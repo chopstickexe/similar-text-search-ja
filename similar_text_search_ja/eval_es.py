@@ -1,13 +1,14 @@
+import sys
 from pathlib import Path
 from typing import Dict, List
 
-import es as es_wrapper
-import evaluate
-import utils
+from similar_text_search_ja import config, evaluate, utils
+from similar_text_search_ja.config import Config
+from similar_text_search_ja.es import ES
 
 
 def get_mlt_results(
-    es: "es_wrapper.ES",
+    es: "ES",
     index: str,
     test_id_min: int,
     test_id_max: int,
@@ -31,7 +32,7 @@ def get_mlt_results(
 
 
 def get_cosine_results(
-    es: "es_wrapper.ES",
+    es: "ES",
     index: str,
     test_id_min: int,
     test_id_max: int,
@@ -48,35 +49,43 @@ def get_cosine_results(
 
         similar_docs = [
             hit["_source"]
-            for hit in es.cosine_by_id(index, dense_vector_field, query_doc_id)["hits"]["hits"]
+            for hit in es.cosine_by_id(index, dense_vector_field, query_doc_id)["hits"][
+                "hits"
+            ]
         ]
-        results[query_doc_id] = evaluate.compare_docs(query_doc, similar_docs, ans_field)
+        results[query_doc_id] = evaluate.compare_docs(
+            query_doc, similar_docs, ans_field
+        )
     return results
+
+
+def print_summary(reports_dir: Path, results: Dict[int, List[bool]]):
+    evaluate.print_cases(reports_dir / "sentence-bert-cases.csv", results)
+    evaluate.print_summary(
+        reports_dir / "sentnece-bert-summary.txt",
+        results.values(),
+        [1, 3, 5, 10, 20, 50, 100],
+    )
 
 
 def main():
     utils.set_root_logger()
 
-    config_file = utils.get_dir().parent / "config.json"
-    reports_dir = Path("reports/mlit")
-    reports_dir.mkdir(parents=True, exist_ok=True)
+    conf = Config(sys.argv[1])
+    reports_dir = conf.report_dir
+    config.create_dir(reports_dir)
 
-    conf = utils.read_json_config(config_file)
-    mlit_conf = conf["mlit"]
     results = get_cosine_results(
-        es_wrapper.ES([conf["es_url"]]),
-        mlit_conf["es_index"],
-        mlit_conf["test_id_min"],
-        mlit_conf["test_id_max"],
-        conf["es_embedding_field"],
-        mlit_conf["ans_field"],
-        mlit_conf["invalid_ans"],
+        ES([conf.es_url]),
+        conf.es_index_name,
+        conf.test_id_min,
+        conf.test_id_max,
+        conf.es_embedding_field,
+        conf.ans_field,
+        conf.invalid_ans,
     )
 
-    evaluate.print_cases(reports_dir / "cosine-cases.csv", results)
-    evaluate.print_summary(
-        reports_dir / "cosine-summary.txt", results.values(), [1, 3, 5, 10, 20, 50, 100]
-    )
+    print_summary(reports_dir, results)
 
 
 if __name__ == "__main__":
