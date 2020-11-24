@@ -21,7 +21,7 @@ class BaseVectorizer(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def vectorize(self, input_ids):
+    def vectorize(self, sentences: List[str]) -> List[float]:
         raise NotImplementedError
 
 
@@ -47,7 +47,7 @@ class HuggingfaceVectorizer(BaseVectorizer):
     def create(cls: "HuggingfaceVectorizer", config: Dict[str, Any]):
         return cls(config[cls.CONF_KEY_MODEL_NAME])
 
-    def encode(self, sentences: List[str], padding: bool = True):
+    def encode(self, sentences, padding=True):
         if len(sentences) == 0:
             return None
         return self.tokenizer(sentences, return_tensors="pt", padding=padding)
@@ -57,10 +57,12 @@ class HuggingfaceVectorizer(BaseVectorizer):
             encode_result.input_ids.flatten().tolist()
         )
 
-    def vectorize(self, input_ids):
+    def vectorize(self, sentences):
+        input_ids = self.encode(sentences)
         input_ids.to(self.device)
         with torch.no_grad():
-            return self.model(**input_ids)
+            vectors = self.model(**input_ids)
+        return [vectors.last_hidden_state[i][0][:].tolist() for i in range(len(sentences))]
 
 
 class SentenceVectorizer(BaseVectorizer):
@@ -97,4 +99,6 @@ class SentenceVectorizer(BaseVectorizer):
         )
 
     def vectorize(self, sentences):
-        return self.model.encode(sentences)
+        vectors = self.model.encode(sentences)
+        return [vectors[i][:].tolist() for i in range(len(sentences))]
+
