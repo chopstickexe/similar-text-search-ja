@@ -8,7 +8,7 @@ from similar_text_search_ja import config
 from similar_text_search_ja import es as es_wrapper
 from similar_text_search_ja import utils
 from similar_text_search_ja.config import Config
-from similar_text_search_ja.vectorizers import BaseVectorizer, HuggingfaceVectorizer
+from similar_text_search_ja.vectorizers import BaseVectorizer, SentenceVectorizer
 
 
 def create_index(
@@ -71,11 +71,9 @@ def vectorize_doc(
     if not batch_docs or len(batch_docs) == 0:
         return
     batch_txts = [get_target_fields_txt(doc, target_fields) for doc in batch_docs]
-    input_ids = vectorizer.encode(batch_txts)
-    outputs = vectorizer.vectorize(input_ids)
-    assert len(outputs.last_hidden_state) == len(batch_docs)
+    outputs = vectorizer.vectorize(batch_txts)
     for i, doc in enumerate(batch_docs):
-        doc[es_embedding_field] = outputs.last_hidden_state[i][0][:].tolist()
+        doc[es_embedding_field] = outputs[i]
 
 
 def get_target_fields_txt(doc: Dict[str, Any], target_fields: List[str]) -> str:
@@ -126,8 +124,11 @@ def main():
 
     es = es_wrapper.ES([conf.es_url])
 
-    vectorizer = HuggingfaceVectorizer.create(
-        {HuggingfaceVectorizer.CONF_KEY_MODEL_NAME: conf.transformer_model}
+    vectorizer = SentenceVectorizer.create(
+        {
+            SentenceVectorizer.CONF_KEY_TRAINED_MODEL_PATH: str(conf.model_dir),
+            SentenceVectorizer.CONF_KEY_TRANSFORMER_MODEL_NAME: conf.transformer_model,
+        }
     )
     field_settings = __get_es_index_settings(
         conf.es_base_index_settings,
