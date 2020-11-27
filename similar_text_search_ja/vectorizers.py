@@ -101,4 +101,3 @@ class SentenceVectorizer(BaseVectorizer):
     def vectorize(self, sentences):
         vectors = self.model.encode(sentences)
         return [vectors[i][:].tolist() for i in range(len(sentences))]
-
