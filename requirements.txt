@@ -6,6 +6,7 @@ elasticsearch
 sentence-transformers
 pandas
 scikit-learn
+streamlit
 black  # formatter
 flake8  # linter
 pytest
