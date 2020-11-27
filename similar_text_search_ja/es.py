@@ -61,18 +61,11 @@ class ES:
                     "script_score": {
                         "query": {
                             "bool": {
-                                "must_not": [
-                                    {
-                                        "ids": {
-                                            "values": [
-                                                str(query_doc_id)
-                                            ]
+                                "must_not": [{"ids": {"values": [str(query_doc_id)]}}]
                                         }
-                                    }
-                                ]
-                            }},
+                        },
                         "script": {
-                            "source": "cosineSimilarity(params.query_vector, 'bert_cls_vec') + 1.0",
+                            "source": f"cosineSimilarity(params.query_vector, '{dense_vector_field}') + 1.0",
                             "params": {
                                 "query_vector": doc["_source"][dense_vector_field]
                             },
