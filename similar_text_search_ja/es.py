@@ -62,7 +62,7 @@ class ES:
                         "query": {
                             "bool": {
                                 "must_not": [{"ids": {"values": [str(query_doc_id)]}}]
-                                        }
+                            }
                         },
                         "script": {
                             "source": f"cosineSimilarity(params.query_vector, '{dense_vector_field}') + 1.0",
@@ -74,3 +74,21 @@ class ES:
                 }
             }
         )
+
+    def cosine_by_vector(self, index, dense_vector_field, vector, size=100):
+        return self.es.search(
+            body={
+                "query": {
+                    "script_score": {
+                        "query": {"match_all": {}},
+                        "script": {
+                            "source": f"cosineSimilarity(params.query_vector, '{dense_vector_field}') + 1.0",
+                            "params": {"query_vector": vector},
+                        },
+                    }
+                }
+            }
+        )
+
+    def get_hit(self, search_result):
+        return [hit for hit in search_result["hits"]["hits"]]
