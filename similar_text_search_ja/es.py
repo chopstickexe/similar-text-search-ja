@@ -53,6 +53,26 @@ class ES:
             index=index,
         )
 
+    def mlt_by_text(self, index, target_fields, text, size=100, min_term_freq=1):
+        return self.es.search(
+            body={
+                "query": {
+                    "more_like_this": {
+                        "fields": target_fields,
+                        "like": text,
+                        "min_term_freq": min_term_freq,
+                    }
+                },
+                "size": size,
+                "highlight": {
+                    "fields": {
+                        target_fields[0]: {}  # TODO highlights the 1st target field only
+                    }
+                }
+            },
+            index=index,
+        )
+
     def cosine_by_id(self, index, dense_vector_field, query_doc_id, size=100):
         doc = self.es.get(index, query_doc_id)
         return self.es.search(
